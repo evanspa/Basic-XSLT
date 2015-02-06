@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Sealed: true
+Main-Class: us.paulevans.basicxslt.BasicXSLTFrame
+Created-By: Paul Evans @Blue Slate Solutions
+

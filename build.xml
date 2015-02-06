@@ -1,0 +1,446 @@
+<project name="basicxslt" default="dist" basedir="."> 
+	
+	<!-- specify properties in build.properties -->
+	<property file="build.properties" />
+	
+	<!-- set classpath -->
+	<path id="project.class.path">  	
+		<fileset dir="${envLib}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<!-- taskdefs -->
+	<taskdef classpathref="project.class.path" resource="tasks.properties" />
+	
+    <!-- Setup Steps Required Before Compilation -->
+    <target name="init"> 
+    	
+	    <!-- Create the build directory structure used by compile -->
+    	<mkdir dir="${buildDir}"/> 
+		<mkdir dir="${distDir}"/>    	
+	</target> 
+
+	<!-- compile the java source -->
+	<target name="compile" depends="init">
+		<javac srcdir="${srcDir}/${javaDir}" destdir="${buildDir}" 
+			deprecation="yes" debug="yes">
+			<classpath refid="project.class.path" />
+		</javac>
+	</target>
+
+    <!-- make the application jar file -->
+    <target name="dist" depends="compile"> 				
+		<jar jarfile="${distDir}/${ant.project.name}.jar" 
+			manifest="${srcDir}/${javaDir}/META-INF/manifest.txt">
+			<fileset dir="${buildDir}" />
+			<fileset dir="${srcDir}/${i18nDir}" />
+		</jar> 
+	</target> 
+
+    <!-- Make JavaDoc -->
+    <target name="javadoc"> 
+    	
+    	<!-- create the javadoc folder -->
+		<mkdir dir="${javadocDir}" /> 
+    		
+    	<!-- generate the javadoc -->
+		<javadoc packagenames="${javadocPkgs}" sourcepath="${srcDir}/${javaDir}" 
+			destdir="${javadocDir}" Private="yes" /> 
+	</target> 
+	
+    <!-- Clean Out Previously Built Project Files and JavaDoc -->
+    <target name="clean"> 
+    	
+   		<!-- Delete the generated-folders -->
+    	<delete dir="${buildDir}" />
+		<delete dir="${distDir}" />
+		<delete dir="${javadocDir}" /> 
+		<delete dir="${signedJarsDir}" />
+    	<delete dir="${genDir}/jars" />
+    	<delete dir="${genDir}/release" />
+    	<delete dir="${instrumentedClassesDir}" />
+  	</target> 
+  	
+  	<!-- Deploy signed JARs to server -->
+  	<target name="deploy" depends="signjars">
+  		
+  		<!-- secure-copy the signed jars to the deploy-to server -->
+  		<scp verbose="true"
+  			todir="${username}@${deployToServer}:${projWebsiteHome}/${projWebsiteJarsDir}" 
+  			keyfile="${privateKeyLocation}" passphrase="${privateKeyPassphrase}" 
+  			trust="yes">
+  			
+  			<fileset dir="${signedJarsDir}">
+  				<include name="*.jar" />
+  			</fileset>
+  		</scp>
+  	</target>
+  	
+  	<!-- sign the jars using java jarsigner command line tool -->
+  	<target name="signjars" depends="dist">
+  		
+  		<!-- create the dirs -->
+  		<mkdir dir="${signedJarsDir}" />
+  		<mkdir dir="${genDir}/jars" />
+  		
+  		<!-- get the keystore and key-passphrase from the user -->
+  		<input message="Enter the keystore password: " 
+  			addproperty="keystorePassword" />
+  		<input message="Enter the private-key passphrase: " 
+  			addproperty="privateKeyPassphrase" />
+  		
+  		<!-- Wrap log4j.properties configuration in a jar file -->
+  		<jar jarfile="${genDir}/jars/log4j-config.jar">
+  			<fileset dir="${srcDir}/config/logging">
+  				<include name="log4j.properties" />
+  			</fileset>
+  		</jar>
+  	
+  		<!-- sign blueslate-commons.jar -->
+  		<signjar jar="${envLib}/blueslate-commons.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/blueslate-commons-signed.jar" />
+  		<!-- sign blueslate-commons-gui-domtree.jar -->
+  		<signjar jar="${envLib}/blueslate-commons-gui-domtree.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/blueslate-commons-gui-domtree-signed.jar" />
+  		<!-- sign commons-collections-3.1.jar -->
+  		<signjar jar="${envLib}/commons-collections-3.1.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/commons-collections-3.1-signed.jar" />
+  		<!-- sign commons-lang-2.0.jar -->
+  		<signjar jar="${envLib}/commons-lang-2.0.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/commons-lang-2.0-signed.jar" />
+  		<!-- sign commons-codec-1.3.jar -->
+  		<signjar jar="${envLib}/commons-codec-1.3.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/commons-codec-1.3-signed.jar" />
+  	  	<!-- sign commons-httpclient-3.0.1.jar -->
+  	  	<signjar jar="${envLib}/commons-httpclient-3.0.1.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/commons-httpclient-3.0.1-signed.jar" />
+  	  	<!-- sign commons-io-1.2.jar -->
+  	  	<signjar jar="${envLib}/commons-io-1.2.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/commons-io-1.2-signed.jar" />
+  	  	<!-- sign commons-logging-1.1.jar -->
+  	  	<signjar jar="${envLib}/commons-logging-1.1.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/commons-logging-1.1-signed.jar" />
+  	  	<!-- sign commons-net-1.4.1.jar -->
+  	  	<signjar jar="${envLib}/commons-net-1.4.1.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/commons-net-1.4.1-signed.jar" /> 
+  	  	<!-- sign commons-vfs-20070109.jar -->
+  	  	<signjar jar="${envLib}/commons-vfs-20070109.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/commons-vfs-20070109-signed.jar" />
+  	  	<!-- sign jakarta-oro-2.0.8.jar -->
+  	  	<signjar jar="${envLib}/jakarta-oro-2.0.8.jar" 
+  	  	    keystore="${keystoreLocation}"
+  	  	    alias="${signAlias}"
+  	  	    storepass="${keystorePassword}"
+  	  	    keypass="${privateKeyPassphrase}"
+  	  	    signedjar="${signedJarsDir}/jakarta-oro-2.0.8-signed.jar" />
+  		<!-- sign log4j-1.2.12.jar -->
+  		<signjar jar="${envLib}/log4j-1.2.12.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/log4j-1.2.12-signed.jar" />
+   		<!-- sign xalan.jar -->
+  		<signjar jar="${envLib}/xalan.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/xalan-signed.jar" />
+  		<!-- sign xercesImpl.jar -->
+  		<signjar jar="${envLib}/xercesImpl.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/xercesImpl-signed.jar" />
+  		<!-- sign xml-apis.jar -->
+  		<signjar jar="${envLib}/xml-apis.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/xml-apis-signed.jar" />
+  		<!-- sign application jar (in dist/ folder) -->
+  		<signjar jar="${distDir}/${ant.project.name}.jar" 
+  		    keystore="${keystoreLocation}"
+  		    alias="${signAlias}"
+  		    storepass="${keystorePassword}"
+  		    keypass="${privateKeyPassphrase}"
+  		    signedjar="${signedJarsDir}/${ant.project.name}-signed.jar" />
+  	</target>
+
+	<!-- create a "release" distribution -->
+	<target name="release" depends="dist">
+		
+		<!-- prompt user for a revision number to use -->
+        <input message="Input the version number to use:"
+			   addproperty="new.version" />
+
+		<!-- delete/create the release subdir -->
+		<delete dir="${genDir}/release/${ant.project.name}-${new.version}" />
+		<mkdir dir="${genDir}/release/${ant.project.name}-${new.version}" />
+
+		<!-- copy the top-level files (build script, license, run-scripts, 
+		     etc... -->
+		<copy toDir="${genDir}/release/${ant.project.name}-${new.version}/${ant.project.name}-src">
+			<fileset dir=".">
+				<include name="${srcDir}/**" />
+				<include name="${envLib}/**" />
+				<include name="basicxslt.bat" />
+				<include name="basicxslt.sh" />
+				<include name="INSTALL.txt" />
+				<include name="LICENSE.txt" />
+				<include name="build.xml" />
+				<include name="build.properties" />
+			</fileset>
+		</copy>
+		
+		<!-- copy jars -->
+		<copy toDir="${genDir}/release/${ant.project.name}-${new.version}/lib">
+			<fileset dir="${envLib}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+		<copy toDir="${genDir}/release/${ant.project.name}-${new.version}/lib">
+			<fileset dir="${distDir}">
+				<include name="${ant.project.name}.jar" />
+			</fileset>
+		</copy>
+		
+		<!-- copy execute scripts -->
+		<copy toDir="${genDir}/release/${ant.project.name}-${new.version}/bin">
+			<fileset dir=".">
+				<include name="basicxslt.*" />
+				<exclude name="*.bak" />
+			</fileset>
+		</copy>	
+		
+		<!-- copy configuration folder  -->
+		<copy toDir="${genDir}/release/${ant.project.name}-${new.version}/config">
+			<fileset dir="${srcDir}/config">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		
+		<!-- modify scripts to point to location of logging config file -->
+		<replace dir="${genDir}/release/${ant.project.name}-${new.version}/bin"
+			value="/config/logging/log4j.properties">
+			<include name="basicxslt.*" />
+			<replacetoken>/src/config/logging/log4j.properties</replacetoken>
+		</replace>		
+		
+		<!-- modify scripts to point to location of env libs -->
+		<replace dir="${genDir}/release/${ant.project.name}-${new.version}/bin"
+			value="/lib">
+			<include name="basicxslt.*" />
+			<replacetoken>/envlib</replacetoken>
+		</replace>
+		
+		<!-- modify scripts to point to location of application libs -->
+		<replace dir="${genDir}/release/${ant.project.name}-${new.version}/bin"
+			value="/lib">
+			<include name="basicxslt.*" />
+			<replacetoken>/dist</replacetoken>
+		</replace>
+	
+		<!-- modify scripts - update the base path value -->
+		<replace dir="${genDir}/release/${ant.project.name}-${new.version}/bin"
+			value="set BASICXSLT_BASE_PATH=..">
+			<include name="basicxslt.*" />
+			<replacetoken>set BASICXSLT_BASE_PATH=.</replacetoken>
+		</replace>
+				
+		<!-- create the zip -->
+		<zip destfile="${distDir}/${ant.project.name}-${new.version}.zip"
+			basedir="${genDir}/release" />
+		
+		<!-- cleanup -->
+		<delete dir="${genDir}/release/${ant.project.name}-${new.version}" />
+	</target>
+	
+	<!-- unit test the codebase -->
+	<target name="test" depends="code-coverage-setup">
+		
+		<!-- delete the gen/reports dir -->
+		<delete dir="${genReportsDir}/${rawTestResultsDir}" />
+		<delete dir="${genReportsDir}/${formattedTestResultsDir}" />
+		
+		<!-- make necessary dirs -->
+		<mkdir dir="${genReportsDir}/${rawTestResultsDir}" />
+		<mkdir dir="${genReportsDir}/${formattedTestResultsDir}" />
+		
+		<!-- copy i18n resources file into gen/instrumented-classes dir so
+		     that it is in the classpath -->
+		<copy file="${srcDir}/i18n/resources_en_US.properties"
+			toDir="${instrumentedClassesDir}" />
+		
+		<!-- run all junit tests using instrumented classes -->
+		<junit printsummary="yes" haltonfailure="no" 
+			failureproperty="tests.failed">
+			
+			<!-- Specify the name of the coverage data file to use.  The value 
+				 specified below is the default -->
+			<sysproperty key="net.sourceforge.cobertura.datafile" 
+				value="${coberturaDataFileDir}/${coberturaDataFile}" />	
+			
+			<!-- create sys-property for test preferences file -->
+			<sysproperty key="preferencesfile"
+				value="${basedir}/${testDir}/${srcDir}/config/userpreferences/basicxslt.properties.1" />
+	
+			<!-- define the classpath for junit to use -->
+		  	<classpath>
+		  	
+				<!-- put instrumented classes into the classpath first -->
+				<pathelement location="${instrumentedClassesDir}" />
+				<pathelement location="${buildDir}" />
+		  	
+				<!-- put dependent jar files into the classpath -->
+				<path refid="project.class.path" />
+			</classpath>
+			
+			<!-- use the xml formatter -->
+			<formatter type="xml"/>
+
+			<!-- execute the tests -->
+			<batchtest fork="yes" 
+				todir="${genReportsDir}/${rawTestResultsDir}">
+				<fileset dir="${buildDir}">
+					<include name="**/Test*.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		
+		<!-- create the formatted unit test results-report -->
+		<junitreport todir="${genReportsDir}/${formattedTestResultsDir}">
+			<fileset dir="${genReportsDir}/${rawTestResultsDir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" 
+				todir="${genReportsDir}/${formattedTestResultsDir}" />
+		</junitreport>
+		
+		<!-- create the formatted coverage report -->
+		<antcall target="code-coverage-report" />
+		
+		<!-- print alert if one or more tests failed -->
+	    <fail if="tests.failed">
+	      tests.failed=${tests.failed}
+	      ***********************************************************
+	      ***********************************************************
+	      ****  One or more tests failed!  Check the output ...  ****
+	      ***********************************************************
+	      ***********************************************************
+	    </fail>
+	</target>
+	
+	<!-- Generate code coverage report -->
+	<target name="code-coverage-report">
+		
+		<!-- delete/create coverage report directory -->
+		<delete dir="${genReportsDir}/${coverageReportDir}"/>
+		<mkdir dir="${genReportsDir}/${coverageReportDir}"/>
+		
+		<!-- create the coverage report -->
+		<cobertura-report format="html" 
+			datafile="${coberturaDataFileDir}/${coberturaDataFile}" 
+			destdir="${genReportsDir}/${coverageReportDir}">
+			<fileset dir="${srcDir}/${javaDir}">
+				<include name="**/*.java" />
+				<exclude name="**/*Test.java" />
+			</fileset>
+		</cobertura-report>
+	</target>
+	
+	<!-- instrument the codebase for coverage analysis -->
+	<target name="code-coverage-setup" depends="compile">
+		
+		<!-- delete/create the destination folder -->
+		<delete dir="${instrumentedClassesDir}" />
+		<mkdir dir="${instrumentedClassesDir}" />	
+		
+		<!-- delete/create the cobertura data-file directory -->
+		<delete dir="${coberturaDataFileDir}" />
+		<mkdir dir="${coberturaDataFileDir}" />
+		
+		<!-- instrument the classes excluding junit test-classes -->
+		<cobertura-instrument todir="${instrumentedClassesDir}" 
+			datafile="${coberturaDataFileDir}/${coberturaDataFile}">
+		    <fileset dir="${buildDir}">
+		        <include name="**/*.class"/>
+		    	<exclude name="**/Test*.class" />
+		    </fileset>
+		</cobertura-instrument>
+	</target>
+	
+	<!-- publishes the reports (unit test and code coverage) to project website -->
+	<target name="publish-reports">
+		
+  		<!-- get the key-passphrase from the user -->
+  		<input message="Enter the private-key passphrase: " 
+  			addproperty="privateKeyPassphrase" />
+		
+  		<!-- secure-copy the unit test report to project website  -->
+		<echo message="Preparing to copy unit test report to project website..." />
+  		<scp verbose="true"
+  			todir="${username}@${deployToServer}:${projWebsiteHome}/${projWebsiteUnitTestReportDir}" 
+  			keyfile="${privateKeyLocation}" passphrase="${privateKeyPassphrase}" 
+  			trust="yes">  			
+  			<fileset dir="${genReportsDir}/${formattedTestResultsDir}">
+  				<include name="**/*.*" />
+  			</fileset>
+  		</scp>
+ 
+		<!-- secure-copy the coverage report to project website  -->
+		<echo message="Preparing to copy coverage report to project website..." />
+  	  	<scp verbose="true"
+  	  		todir="${username}@${deployToServer}:${projWebsiteHome}/${projWebsiteCoverageReportDir}" 
+  	  		keyfile="${privateKeyLocation}" passphrase="${privateKeyPassphrase}" 
+  	  		trust="yes">  	  			
+  	  		<fileset dir="${genReportsDir}/${coverageReportDir}">
+  	  			<include name="**/*.*" />
+  	  		</fileset>
+  	  	</scp>		
+	</target>
+</project> 

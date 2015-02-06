@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jnlp spec="1.5+" codebase="http://basicxslt.sourceforge.net/" href="jws/basicxslt.jnlp">
+  <information>
+    <title>Basic XSLT Application</title>
+    <vendor>Paul Evans</vendor>
+    <homepage href="index.html" />
+    <description>Basic XSLT Application</description>
+    <description kind="short">GUI tool for performing XSL transformations</description>
+    <offline-allowed /> 
+    <shortcut online="false">
+      <desktop />
+      <menu submenu="Basic XSLT" />
+    </shortcut>
+  </information>
+  <security>
+      <all-permissions />
+  </security>
+  <resources>
+    <j2se version="1.5" />
+    <jar href="jws/jars/basicxslt-signed.jar" />
+    <jar href="jws/jars/blueslate-commons-gui-domtree-signed.jar" />
+    <jar href="jws/jars/blueslate-commons-signed.jar" />
+    <jar href="jws/jars/commons-collections-3.1-signed.jar" />
+    <jar href="jws/jars/commons-lang-2.0-signed.jar" />
+    <jar href="jws/jars/log4j-1.2.12-signed.jar" />
+    <jar href="jws/jars/xalan-signed.jar" />
+    <jar href="jws/jars/xercesImpl-signed.jar" />
+    <jar href="jws/jars/xml-apis-signed.jar" />
+    <jar href="jws/jars/log4j-config-signed.jar" />
+  </resources>
+  <application-desc main-class="us.paulevans.basicxslt.BasicXSLTFrame"/>
+</jnlp>
