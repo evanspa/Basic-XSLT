@@ -1,5 +1,7 @@
 # Basic-XSLT
 
+[![Build Status](https://travis-ci.org/evanspa/Basic-XSLT.svg)](https://travis-ci.org/evanspa/Basic-XSLT)
+
 Basic-XLST is a Java-based graphical tool for applying a chain of XSL
 transformations to an XML document.
 
