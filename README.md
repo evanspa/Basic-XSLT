@@ -42,4 +42,4 @@ create multiple configurations as well as load them at any time.
 
 # History
 
-Basic-XSLT was originally developed in April of 2006, using Java 5.0.
+Development of Basic-XSLT began in early 2003.
